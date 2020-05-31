@@ -127,8 +127,7 @@ class UpdateEventSkill(MycroftSkill):
         print("the events are", events)
         eventid=None
         for event in events:
-            start = event['start'].get('dateTime', event['start'].get('date'))
-            if(event['summary']== title and event['location']==location and start ==datestart):
+            if(event['summary']== title and event['location']==location):
                 eventid=event['id']
 
         if eventid ==None:
