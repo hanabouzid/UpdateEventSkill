@@ -122,7 +122,7 @@ class UpdateEventSkill(MycroftSkill):
         events = service.events().list(calendarId='primary', timeMin=datestart, singleEvents=True,
                                              orderBy='startTime', q=location).execute()
         eventid=None
-        print(events['items'])
+        print("the events are",events['items'])
         for event in events['items']:
             if(event['summary']== title and event['location']==location and event['start']['dateTime']==datestart):
                 eventid=event['id']
