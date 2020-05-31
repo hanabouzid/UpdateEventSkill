@@ -124,53 +124,54 @@ class UpdateEventSkill(MycroftSkill):
                                               maxResults=10, singleEvents=True,
                                               orderBy='startTime').execute()
         events = events_result.get('items', [])
-        eventid = None
         print("the events are", events)
+        eventid=None
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
             if(event['summary']== title and event['location']==location and start ==datestart):
                 eventid=event['id']
-                ask = self.get_response('what do you want to update')
-                if ask == "update title":
-                    newtitle = self.get_response('what is the new title?')
-                    eventup = {
-                        'summary': newtitle,
-                    }
-                elif ask == "update description":
-                    newdesc = self.get_response('what is the new description?')
-                    eventup = {
-                        'description': newdesc,
-                    }
-                elif ask == "update start date time ":
-                    newdatestrt = self.get_response('what is the new start date time?')
-                    st1 = extract_datetime(newdatestrt)
-                    st1 = st1[0] - self.utc_offset
-                    newdatestart = st1.strftime('%Y-%m-%dT%H:%M:00')
-                    newdatestart += UTC_TZ
-                    eventup = {
-                        'start': {
-                            'dateTime': newdatestart,
-                            'timeZone': 'America/Los_Angeles',
-                        },
-                    }
-                elif ask == "update end date time ":
-                    newdatd = self.get_response('what is the new start date time?')
-                    et1 = extract_datetime(newdatd)
-                    et1 = et1[0] - self.utc_offset
-                    newdateend = et1.strftime('%Y-%m-%dT%H:%M:00')
-                    newdateend += UTC_TZ
-                    eventup = {
-                        'end': {
-                            'dateTime': newdateend,
-                            'timeZone': 'America/Los_Angeles',
-                        },
-                    }
-                print(eventup)
-                service.events().patch(calendarId='primary', eventId=eventid,
-                                       sendNotifications=True, body=eventup).execute()
+
         if eventid ==None:
             self.speak_dialog("notEvent")
-
+        else:
+            ask = self.get_response('what do you want to update')
+            if ask == "update title":
+                newtitle = self.get_response('what is the new title?')
+                eventup = {
+                    'summary': newtitle,
+                }
+            elif ask == "update description":
+                newdesc = self.get_response('what is the new description?')
+                eventup = {
+                    'description': newdesc,
+                }
+            elif ask == "update start date time ":
+                newdatestrt = self.get_response('what is the new start date time?')
+                st1 = extract_datetime(newdatestrt)
+                st1 = st1[0] - self.utc_offset
+                newdatestart = st1.strftime('%Y-%m-%dT%H:%M:00')
+                newdatestart += UTC_TZ
+                eventup = {
+                    'start': {
+                        'dateTime': newdatestart,
+                        'timeZone': 'America/Los_Angeles',
+                    },
+                }
+            elif ask == "update end date time ":
+                newdatd = self.get_response('what is the new start date time?')
+                et1 = extract_datetime(newdatd)
+                et1 = et1[0] - self.utc_offset
+                newdateend = et1.strftime('%Y-%m-%dT%H:%M:00')
+                newdateend += UTC_TZ
+                eventup = {
+                    'end': {
+                        'dateTime': newdateend,
+                        'timeZone': 'America/Los_Angeles',
+                    },
+                }
+            print(eventup)
+            service.events().patch(calendarId='primary', eventId=eventid,
+                                   sendNotifications=True, body=eventup).execute()
 
 
 def create_skill():
