@@ -106,7 +106,7 @@ class UpdateEventSkill(MycroftSkill):
         #listname1=utt.split(" named ")
         #listname2=listname1[1].split(" with ")
         #title =listname2[0]
-        lister = utt.split(" start ")
+        lister = utt.split(" starts ")
         lister2 = lister[1].split(" in ")
         location = lister2[1]
         print(location)
@@ -127,9 +127,43 @@ class UpdateEventSkill(MycroftSkill):
                 eventid=event['id']
             else:
                 self.speak_dialog("notevent")
-        eventup = {
-            'summary':'update',
-        }
+
+        ask = self.get_response('what do you want to update')
+        if ask == "update title":
+            newtitle = self.get_response('what is the new title?')
+            eventup = {
+                'summary':newtitle,
+            }
+        elif ask == "update description":
+            newdesc = self.get_response('what is the new description?')
+            eventup = {
+                'description': newdesc,
+            }
+        elif ask == "update start date time ":
+            newdatestrt = self.get_response('what is the new start date time?')
+            st1 = extract_datetime(newdatestrt)
+            st1 = st1[0] - self.utc_offset
+            newdatestart = st1.strftime('%Y-%m-%dT%H:%M:00')
+            newdatestart += UTC_TZ
+            eventup = {
+                'start': {
+                    'dateTime':newdatestart,
+                    'timeZone': 'America/Los_Angeles',
+                },
+            }
+        elif ask == "update end date time ":
+            newdatd = self.get_response('what is the new start date time?')
+            et1 = extract_datetime(newdatd)
+            et1 = et1[0] - self.utc_offset
+            newdateend = et1.strftime('%Y-%m-%dT%H:%M:00')
+            newdateend += UTC_TZ
+            eventup = {
+                'end': {
+                    'dateTime': newdateend,
+                    'timeZone': 'America/Los_Angeles',
+                },
+            }
+        print(eventup)
         service.events().patch(calendarId='primary', eventId=eventid,
                             sendNotifications=True, body=eventup).execute()
 
