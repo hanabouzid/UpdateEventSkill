@@ -119,12 +119,16 @@ class UpdateEventSkill(MycroftSkill):
         lister3=lister[0].split(" the event ")
         title=lister3[1]
         print(title)
-        events = service.events().list(calendarId='primary', timeMin=datestart, singleEvents=True,
-                                             orderBy='startTime', q=location).execute()
-        eventid=None
-        print("the events are",events['items'])
-        for event in events['items']:
-            if(event['summary']== title and event['location']==location and event['start']['dateTime']==datestart):
+
+        events_result = service.events().list(calendarId='primary', timeMin=datestart,
+                                              maxResults=10, singleEvents=True,
+                                              orderBy='startTime').execute()
+        events = events_result.get('items', [])
+        eventid = None
+        print("the events are", events)
+        for event in events:
+            start = event['start'].get('dateTime', event['start'].get('date'))
+            if(event['summary']== title and event['location']==location and start ==datestart):
                 eventid=event['id']
                 ask = self.get_response('what do you want to update')
                 if ask == "update title":
