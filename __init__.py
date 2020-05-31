@@ -125,12 +125,14 @@ class UpdateEventSkill(MycroftSkill):
                                               orderBy='startTime').execute()
         events = events_result.get('items', [])
         print("the events are", events)
-        eventid=None
+
         for event in events:
+            x = False
             if(event['summary']== title and event['location']==location):
                 eventid=event['id']
-
-        if eventid ==None:
+                x= True
+                break
+        if x==False:
             self.speak_dialog("notEvent")
         else:
             ask = self.get_response('what do you want to update')
