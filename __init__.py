@@ -37,6 +37,27 @@ class UpdateEventSkill(MycroftSkill):
     def utc_offset(self):
         return timedelta(seconds=self.location['timezone']['offset'] / 1000)
 
+    def freebusy(self, mail, datestart, datend, service):
+        body = {
+            "timeMin": datestart,
+            "timeMax": datend,
+            "timeZone": 'America/Los_Angeles',
+            "items": [{"id": mail}]
+        }
+        eventsResult = service.freebusy().query(body=body).execute()
+        cal_dict = eventsResult[u'calendars']
+        print(cal_dict)
+        for cal_name in cal_dict:
+            print(cal_name, ':', cal_dict[cal_name])
+            statut = cal_dict[cal_name]
+            for i in statut:
+                if (i == 'busy' and statut[i] == []):
+                    return True
+
+                    # ajouter l'email de x ala liste des attendee
+                elif (i == 'busy' and statut[i] != []):
+                    return False
+
     @intent_handler(IntentBuilder("update_event_intent").require('update').require('Event').optionally('time').optionally('Location').build())
     def updateevent(self,message):
         #AUTHORIZE
@@ -119,6 +140,29 @@ class UpdateEventSkill(MycroftSkill):
         lister3=lister[0].split(" the event ")
         title=lister3[1]
         print(title)
+        # liste de contacts
+        nameliste = []
+        adsmails = []
+        for person in connections:
+            emails = person.get('emailAddresses', [])
+            adsmails.append(emails[0].get('value'))
+            names = person.get('names', [])
+            nameliste.append(names[0].get('displayName'))
+        # liste of meeting rooms
+        namerooms = ['midoune room', 'aiguilles room', 'barrouta room', 'kantaoui room', 'gorges room', 'ichkeul room',
+                     'khemir room', 'tamaghza room', 'friguia room', 'ksour room', 'medeina room', 'thyna room']
+        emailrooms = ["focus-corporation.com_3436373433373035363932@resource.calendar.google.com",
+                      "focus-corporation.com_3132323634363237333835@resource.calendar.google.com",
+                      "focus-corporation.com_3335353934333838383834@resource.calendar.google.com",
+                      "focus-corporation.com_3335343331353831343533@resource.calendar.google.com",
+                      "focus-corporation.com_3436383331343336343130@resource.calendar.google.com",
+                      "focus-corporation.com_36323631393136363531@resource.calendar.google.com",
+                      "focus-corporation.com_3935343631343936373336@resource.calendar.google.com",
+                      "focus-corporation.com_3739333735323735393039@resource.calendar.google.com",
+                      "focus-corporation.com_3132343934363632383933@resource.calendar.google.com",
+                      "focus-corporation.com_@resource.calendar.google.com",
+                      "focus-corporation.com_@resource.calendar.google.com",
+                      "focus-corporation.com_@resource.calendar.google.com"]
         events_result = service.events().list(calendarId='primary',timeMin=datestart,
                                               maxResults=1, singleEvents=True,
                                               orderBy='startTime', q=location).execute()
@@ -128,6 +172,8 @@ class UpdateEventSkill(MycroftSkill):
 
         for event in events:
             eventid = event['id']
+            eventend=event['end']['dateTime']
+            attendees=event['attendees']
         ask = self.get_response('what do you want to update')
         if ask == "update title":
             newtitle = self.get_response('what is the new title?')
@@ -163,11 +209,27 @@ class UpdateEventSkill(MycroftSkill):
                     'timeZone': 'America/Los_Angeles',
                 },
             }
+
+        elif ask=="update location":
+            newlocation = self.get_response('what is the new location?')
+            for i in namerooms:
+                if i==newlocation:
+                    roommail= emailrooms[i]
+            x = self.freebusy(roommail, datestart, eventend, service)
+            if x == True:
+                self.speak_dialog('roomfree', data={"room": newlocation})
+                email = {'email': roommail}
+                attendees.append(email)
+                eventup = {
+                    'attendees': attendees,
+                }
+
+            else:
+                self.speak_dialog('roombusy', data={"room": newlocation})
         print(eventup)
         service.events().patch(calendarId='primary', eventId=eventid,
                                    sendNotifications=True, body=eventup).execute()
-
-
+        self.speak_dialog("eventUpdated")
 
 
 
