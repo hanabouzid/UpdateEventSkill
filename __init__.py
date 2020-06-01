@@ -1,6 +1,8 @@
 from __future__ import print_function
 import json
 import sys
+from filecmp import cmp
+
 from adapt.intent import IntentBuilder
 from adapt.engine import IntentDeterminationEngine
 from mycroft.skills.core import MycroftSkill, intent_handler
@@ -230,7 +232,7 @@ class UpdateEventSkill(MycroftSkill):
             x = self.freebusy(roommail, datestart, eventend, service)
             if x == True:
                 self.speak_dialog('roomfree', data={"newlocation": newlocation})
-                email = {'email': roommail}
+                email = {'email':roommail}
                 attendees.append(email)
                 eventup = {
                     'attendees': attendees,
@@ -242,7 +244,7 @@ class UpdateEventSkill(MycroftSkill):
                 x = self.get_response("Do you agree making a reservation for this meeting room")
                 if x == "yes":
                     newlocation= suggroom
-                    email = {'email': suggmail}
+                    email = {'email':suggmail}
                     attendees.append(email)
                 else:
                     s = ",".join(freerooms)
@@ -258,6 +260,18 @@ class UpdateEventSkill(MycroftSkill):
                 eventup = {
                     'attendees': attendees,
                 }
+        elif ask == "delete attendee":
+            name = self.get_response("what is the attendee's name?")
+            for j, e in enumerate(nameliste):
+                if name == e:
+                    deletemail = adsmails[j]
+                    email = {'email':deletemail}
+            for i in attendees:
+                if(cmp(attendees[i], email)==0):
+                     del (attendees[i])
+            eventup = {
+                'attendees': attendees,
+            }
         print(eventup)
         service.events().patch(calendarId='primary', eventId=eventid,
                                    sendNotifications=True, body=eventup).execute()
