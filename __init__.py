@@ -163,6 +163,7 @@ class UpdateEventSkill(MycroftSkill):
                       "focus-corporation.com_@resource.calendar.google.com",
                       "focus-corporation.com_@resource.calendar.google.com",
                       "focus-corporation.com_@resource.calendar.google.com"]
+
         events_result = service.events().list(calendarId='primary',timeMin=datestart,
                                               maxResults=1, singleEvents=True,
                                               orderBy='startTime', q=location).execute()
@@ -174,6 +175,17 @@ class UpdateEventSkill(MycroftSkill):
             eventid = event['id']
             eventend=event['end']['dateTime']
             attendees=event['attendees']
+
+        # freerooms
+        freemails = []
+        freerooms = []
+        for i in range(0, len(emailrooms)):
+            if self.freebusy(emailrooms[i],datestart,eventend,service):
+                # la liste freerooms va prendre  les noms des salles free
+                freerooms.append(namerooms[i])
+                freemails.append(emailrooms[i])
+        suggroom = freerooms[0]
+        suggmail = freemails[0]
         ask = self.get_response('what do you want to update')
         if ask == "update title":
             newtitle = self.get_response('what is the new title?')
@@ -217,7 +229,7 @@ class UpdateEventSkill(MycroftSkill):
                     roommail= emailrooms[i]
             x = self.freebusy(roommail, datestart, eventend, service)
             if x == True:
-                self.speak_dialog('roomfree', data={"room": newlocation})
+                self.speak_dialog('roomfree', data={"newlocation": newlocation})
                 email = {'email': roommail}
                 attendees.append(email)
                 eventup = {
@@ -225,7 +237,27 @@ class UpdateEventSkill(MycroftSkill):
                 }
 
             else:
-                self.speak_dialog('roombusy', data={"room": newlocation})
+                self.speak_dialog('roombusy', data={"newlocation": newlocation})
+                self.speak_dialog("suggestionroom", data={"suggroom": suggroom})
+                x = self.get_response("Do you agree making a reservation for this meeting room")
+                if x == "yes":
+                    newlocation= suggroom
+                    email = {'email': suggmail}
+                    attendees.append(email)
+                else:
+                    s = ",".join(freerooms)
+                    # print("les salles disponibles a cette date sont", freerooms)
+                    self.speak_dialog("freerooms", data={"s": s})
+                    room = self.get_response('which Room do you want to make a reservation for??')
+                    for i in range(0, len(freerooms)):
+                        if (freerooms[i] == room):
+                            # ajouter l'email de room dans la liste des attendees
+                            newlocation = room
+                            email = {'email':freemails[i] }
+                            attendees.append(email)
+                eventup = {
+                    'attendees': attendees,
+                }
         print(eventup)
         service.events().patch(calendarId='primary', eventId=eventid,
                                    sendNotifications=True, body=eventup).execute()
