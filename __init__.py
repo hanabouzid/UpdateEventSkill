@@ -178,6 +178,7 @@ class UpdateEventSkill(MycroftSkill):
             eventend=event['end']['dateTime']
             attendees=event['attendees']
 
+
         # freerooms
         freemails = []
         freerooms = []
@@ -225,6 +226,7 @@ class UpdateEventSkill(MycroftSkill):
             }
 
         elif ask=="update location":
+            attendees.remove(attendees[0])
             newlocation = self.get_response('what is the new location?')
             for i in range(len(namerooms)) :
                 if namerooms[i]==newlocation:
@@ -235,6 +237,7 @@ class UpdateEventSkill(MycroftSkill):
                 email = {'email':roommail}
                 attendees.append(email)
                 eventup = {
+                    'location': newlocation,
                     'attendees': attendees,
                 }
 
@@ -258,6 +261,7 @@ class UpdateEventSkill(MycroftSkill):
                             email = {'email':freemails[i] }
                             attendees.append(email)
                 eventup = {
+                    'location': newlocation,
                     'attendees': attendees,
                 }
         elif ask == "delete attendee":
@@ -266,9 +270,11 @@ class UpdateEventSkill(MycroftSkill):
                 if name == e:
                     deletemail = adsmails[j]
                     email = {'email':deletemail}
+                    print(email)
             for i in attendees:
-                if(cmp(attendees[i], email)==0):
-                     del (attendees[i])
+                if i == email:
+                    print(i)
+                    attendees.remove(i)
             eventup = {
                 'attendees': attendees,
             }
