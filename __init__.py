@@ -285,17 +285,17 @@ class UpdateEventSkill(MycroftSkill):
                     addemail = adsmails[j]
                     email = {'email': addemail}
                     print(email)
-                x = self.freebusy(addemail, datestart, eventend, service)
-                if x == True:
-                    self.speak_dialog('attfree', data={"name": name})
-                    email = {'email': addemail}
-                    attendees.append(email)
-                    eventup = {
-                        'attendees': attendees,
-                    }
+            x = self.freebusy(addemail, datestart, eventend, service)
+            if x == True:
+                self.speak_dialog('attfree', data={"name": name})
+                email = {'email': addemail}
+                attendees.append(email)
+                eventup = {
+                    'attendees': attendees,
+                }
 
-                else:
-                    self.speak_dialog('attbusy', data={"name": name})
+            else:
+                self.speak_dialog('attbusy', data={"name": name})
 
         print(eventup)
         service.events().patch(calendarId='primary', eventId=eventid,
