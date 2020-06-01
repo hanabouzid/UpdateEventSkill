@@ -212,8 +212,8 @@ class UpdateEventSkill(MycroftSkill):
 
         elif ask=="update location":
             newlocation = self.get_response('what is the new location?')
-            for i in namerooms:
-                if i==newlocation:
+            for i in range(len(namerooms)) :
+                if namerooms[i]==newlocation:
                     roommail= emailrooms[i]
             x = self.freebusy(roommail, datestart, eventend, service)
             if x == True:
