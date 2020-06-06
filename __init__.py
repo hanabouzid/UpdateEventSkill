@@ -59,7 +59,11 @@ class UpdateEventSkill(MycroftSkill):
                     # ajouter l'email de x ala liste des attendee
                 elif (i == 'busy' and statut[i] != []):
                     return False
-
+    def recherche(self,list1,list2,loc):
+        for i in range(len(list1)):
+            if list1[i] == loc:
+                roommail = list2[i]
+        return roommail
     @intent_handler(IntentBuilder("update_event_intent").require('update').require('Event').optionally('time').optionally('Location').build())
     def updateevent(self,message):
         #AUTHORIZE
@@ -193,11 +197,17 @@ class UpdateEventSkill(MycroftSkill):
             }
 
         elif ask=="update location":
-            attendees.remove(attendees[0])
+            for j, e in enumerate(namerooms):
+                if location == e:
+                    deletemail = emailrooms[j]
+                    email = {'email': deletemail}
+                    print(email)
+            for i in attendees:
+                if i == email:
+                    print(i)
+                    attendees.remove(i)
             newlocation = self.get_response('what is the new location?')
-            for i in range(len(namerooms)) :
-                if namerooms[i]==newlocation:
-                    roommail= emailrooms[i]
+            roommail=self.recherche(namerooms,emailrooms,newlocation)
             x = self.freebusy(roommail, datestart, eventend, service)
             if x == True:
                 self.speak_dialog('roomfree', data={"newlocation": newlocation})
