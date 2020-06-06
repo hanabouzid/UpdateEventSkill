@@ -63,7 +63,7 @@ class UpdateEventSkill(MycroftSkill):
     @intent_handler(IntentBuilder("update_event_intent").require('update').require('Event').optionally('time').optionally('Location').build())
     def updateevent(self,message):
         #AUTHORIZE
-        storage1 = Storage('opt/mycroft/skills/updateeventskill.hanabouzid/info3.dat')
+        storage1 = Storage('/opt/mycroft/skills/updateeventskill.hanabouzid/info3.dat')
         credentials = storage1.get()
         if credentials is None or credentials.invalid == True:
             credentials = tools.run_flow(FLOW, storage1)
